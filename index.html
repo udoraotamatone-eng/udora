@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>守護神ウドラ 神話降臨</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #080012 0%, #12002a 50%, #080018 100%);
+    color: #e8d5ff;
+    font-family: 'Noto Serif JP', 'Georgia', serif;
+    padding: 20px 16px 60px;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ヘッダー */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header .dragon {
+    font-size: 40px;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 14px #c890ff);
+    display: block;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #f0c040, #d090ff, #f0c040);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 11px;
+    color: #7a60a0;
+    letter-spacing: 0.15em;
+  }
+
+  /* ボタンエリア */
+  .btn-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .btn-main {
+    flex: 1;
+    padding: 16px;
+    background: linear-gradient(135deg, #5a25b0 0%, #8a45e0 100%);
+    border: 1px solid rgba(200,150,255,0.35);
+    border-radius: 14px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    box-shadow: 0 0 20px rgba(140,70,220,0.4);
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-main:disabled {
+    background: rgba(80,40,140,0.4);
+    color: #9070c0;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .btn-reset {
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(200,150,255,0.2);
+    border-radius: 14px;
+    color: #9070c0;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    font-family: inherit;
+  }
+  .btn-reset.visible { display: block; }
+
+  /* 生成中 */
+  .loading {
+    text-align: center;
+    padding: 30px 0;
+    color: #c090ff;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    display: none;
+  }
+  .loading.visible { display: block; }
+  .loading .spark {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* エラー */
+  .error-box {
+    background: rgba(180,40,40,0.2);
+    border: 1px solid rgba(220,80,80,0.4);
+    border-radius: 12px;
+    padding: 16px;
+    color: #ff9090;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-box.visible { display: block; }
+
+  /* 神話カード */
+  .story-area { display: none; }
+  .story-area.visible { display: block; }
+
+  .part-card {
+    border-radius: 14px;
+    margin-bottom: 14px;
+    padding: 14px 18px;
+  }
+  .part-card.ki  { background:#2a1a5e; border:1px solid #7c6af755; border-left:4px solid #7c6af7; }
+  .part-card.sho { background:#0d2a4a; border:1px solid #4a90d955; border-left:4px solid #4a90d9; }
+  .part-card.ten { background:#4a0e0e; border:1px solid #e05c5c55; border-left:4px solid #e05c5c; }
+  .part-card.ketsu { background:#0d3320; border:1px solid #4caf7d55; border-left:4px solid #4caf7d; }
+
+  .part-label {
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  .ki    .part-label { color: #a090ff; }
+  .sho   .part-label { color: #70b0f0; }
+  .ten   .part-label { color: #ff9090; }
+  .ketsu .part-label { color: #80d0a0; }
+
+  .part-text {
+    font-size: 15px;
+    line-height: 2;
+    color: #f0e8ff;
+    letter-spacing: 0.04em;
+  }
+
+  /* 神託 */
+  .shintaku {
+    background: linear-gradient(135deg, rgba(240,192,64,0.10), rgba(180,100,255,0.10));
+    border: 1px solid rgba(240,192,64,0.35);
+    border-radius: 16px;
+    padding: 22px 20px;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 24px;
+  }
+  .shintaku-label {
+    font-size: 11px;
+    color: #c0a040;
+    letter-spacing: 0.2em;
+    margin-bottom: 14px;
+  }
+  .shintaku-text {
+    font-size: 16px;
+    line-height: 2;
+    color: #ffe090;
+    font-style: italic;
+    letter-spacing: 0.05em;
+  }
+
+  /* 次の神話ボタン */
+  .btn-next {
+    display: block;
+    width: 100%;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #5a25b0, #8a45e0);
+    border: 1px solid rgba(200,150,255,0.3);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    margin-bottom: 30px;
+    font-family: inherit;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 10px;
+    color: #3a2060;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <span class="dragon">🐉</span>
+    <h1>守護神ウドラ 神話降臨</h1>
+    <p>── イヨウ王国の記憶 ──</p>
+  </div>
+
+  <!-- ボタン -->
+  <div class="btn-area">
+    <button class="btn-main" id="btnMain" onclick="generate()">⚡ 神話降臨</button>
+    <button class="btn-reset" id="btnReset" onclick="reset()">🔄</button>
+  </div>
+
+  <!-- 生成中 -->
+  <div class="loading" id="loading">
+    <span class="spark">✨</span>
+    神話の記憶が開かれる...
+  </div>
+
+  <!-- エラー -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- 神話 -->
+  <div class="story-area" id="storyArea">
+    <div class="part-card ki">
+      <div class="part-label">── 【起】──</div>
+      <div class="part-text" id="part-起"></div>
+    </div>
+    <div class="part-card sho">
+      <div class="part-label">── 【承】──</div>
+      <div class="part-text" id="part-承"></div>
+    </div>
+    <div class="part-card ten">
+      <div class="part-label">── 【転】──</div>
+      <div class="part-text" id="part-転"></div>
+    </div>
+    <div class="part-card ketsu">
+      <div class="part-label">── 【結】──</div>
+      <div class="part-text" id="part-結"></div>
+    </div>
+    <div class="shintaku" id="shintakuBox">
+      <div class="shintaku-label">🌟 ── ウドラ様の神託 ── 🌟</div>
+      <div class="shintaku-text" id="part-神託"></div>
+    </div>
+    <button class="btn-next" onclick="generate()">⚡ 次の神話を召喚</button>
+  </div>
+
+  <div class="footer">守護神ウドラ様 © イヨウ王国</div>
+</div>
+
+<script>
+const PLACE_POOL = [
+  "山あいの村","霧の森のほとり","海辺の小さな港","石の橋がかかる川辺の町",
+  "星をまつる高原の集落","赤い塔が見える城下町","古い井戸のある村",
+  "白い花畑に囲まれた里","断崖の上に建つ灯台の町","深い森に隠れた神殿の村",
+  "雪に閉ざされた山奥の集落","大河のほとりの交易の町","砂に埋もれた古い遺跡の村",
+  "湖の中央に浮かぶ小島の里","黒い岩に囲まれた海岸の村","霜に覆われた朝の高地の集落",
+  "風鳴りの谷に寄り添う石造りの町","月影が差し込む竹林のはずれ",
+  "赤土の丘に広がるぶどう畑の村","古い水車が回る川沿いの里",
+  "白い霧が流れる湿原の集落","祭りの太鼓が響く平野の村",
+  "金色の麦畑に囲まれた宿場町","流星を祀る丘の上の神域",
+  "珊瑚の浜辺を持つ南の漁村","雲海を見下ろす崖上の砦町",
+  "夜だけ灯がともる森の市場","春霞に包まれた梅の里","白蛇伝承が残る渓谷の集落",
+];
+
+const HERO_POOL = [
+  "薪を集める少年","水くみをする少女","鐘を守る老人","畑をたがやす若者",
+  "パンを焼く娘","羊を追う子ども","薬草を集める母親","橋守の男",
+  "漁に出る若い漁師","井戸を管理する少女","風車を見守る老人",
+  "市場で働く少年","牛を世話する娘","森の道案内をする男","星を観測する子ども",
+  "灯を守る神殿の侍女","書庫を掃除する青年","染物を干す職人",
+  "舟を修理する老人","蜂を育てる娘","塩を運ぶ若者","石碑を磨く少年",
+  "祭具を整える神殿の女官","薬師の手伝いをする少女","古地図を写す書記",
+  "山道を直す木こり","陶器を焼く職人","旅人を迎える宿の娘",
+  "橋のたもとで笛を吹く子ども","畑の水路を守る老人",
+  "年老いた父と漁に出る息子","病の母を看る娘","幼い弟を連れて市場へ向かう姉",
+  "夫の残した舟を修理する妻","妹のために薬草を集める兄",
+];
+
+const STORY_TYPES = [
+  "覚醒","試練","日常","逆転","神視点","過去","象徴",
+  "赦し","継承","選択","再起","別れ","すれ違い","交換",
+  "守護","初恋","再会","縁","討伐","封印","降臨","契約",
+];
+
+const TROUBLE_POOL = [
+  "大切なものを失いかけた","進むべき道が分からなくなった","誰を信じるべきか迷った",
+  "守るべき約束を思い出せなくなった","大事な役目から逃げたくなった",
+  "言うべき言葉を飲み込んでいた","選ばなければならない時を迎えた",
+  "誰にも言えない願いを抱えていた","失くした声を探していた",
+  "古い約束の重さに苦しんでいた","本当の望みを口にできずにいた",
+  "過去の失敗を引きずっていた","大切な役目の意味を見失っていた",
+  "受け継いだものを拒みたくなっていた","小さな嘘を抱えたまま日々を過ごしていた",
+];
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function buildPrompt() {
+  return `あなたは神話の語り部です。視聴者を引き込む、ドラマチックで壮大な神話を作ること。
+毎回、これまでと全く異なる展開・出来事・結末を作ること。
+
+■舞台: ${pick(PLACE_POOL)}
+■主人公: ${pick(HERO_POOL)}
+■今回の物語型（必ず守ること）: ${pick(STORY_TYPES)}
+■問題候補（使わなくてもよい）: ${pick(TROUBLE_POOL)}
+
+■起承転結 それぞれの役割（最重要）
+【起】世界に引き込む「始まり」
+・舞台・人物・空気感を見せる。日常の中に伏線を1つ仕込むこと。
+【承】話を動かす「異変・事件」
+・起で作った世界に変化が起きる。緊張感・不穏さ・ドラマが生まれること。
+【転】最大の見せ場「予想外の展開」★最重要★
+・驚き・真実の暴露・戦い・逆転・覚醒のいずれかが起きること。
+・起承と同じトーンで進むことは禁止。「おお！」となる急変・衝突・発見を必ず入れること。
+【結】余韻と着地
+・転の結果、主人公が何を得たか・失ったかを描く。必ずしもハッピーエンドにしないこと。
+・教訓・格言を末尾に書くことは絶対禁止（それは【神託】に書く）
+
+■絶対条件：身体動作で描く
+内面語（気づく・考えた・決意した・思った・感じた・迷う・悟る）は禁止。
+身体の動作・行動・表情・状況の変化で描写すること。
+「誰が」＋「何を手に持ち・触れ」＋「どこで」＋「何をした」
+
+■条件
+・神話的な重みのある言葉で書く
+・各パート60〜100文字
+・日本神話・和風要素（巫女・神社・鳥居）は禁止
+・神が登場する場合は「突然現れて解決する」パターンは禁止
+
+■構成（必ずこの形式で返すこと）
+【起】...(60〜100文字)
+【承】...(60〜100文字)
+【転】...(60〜100文字)★最もドラマチックに
+【結】...(60〜100文字)
+【神託】この物語の教訓を、短く力強い一文で。ウドラ様のセリフとして。三人称表現禁止。セリフのみ一文。`;
+}
+
+function parseStory(text) {
+  const parts = {};
+  for (const k of ["起","承","転","結","神託"]) {
+    const re = new RegExp(`【${k}】([\\s\\S]*?)(?=【|$)`);
+    const m = text.match(re);
+    if (m) parts[k] = m[1].trim();
+  }
+  return parts;
+}
+
+async function generate() {
+  const btnMain = document.getElementById('btnMain');
+  const btnReset = document.getElementById('btnReset');
+  const loading = document.getElementById('loading');
+  const errorBox = document.getElementById('errorBox');
+  const storyArea = document.getElementById('storyArea');
+
+  btnMain.disabled = true;
+  btnMain.textContent = '⏳ 神話編纂中...';
+  btnReset.classList.add('visible');
+  loading.classList.add('visible');
+  errorBox.classList.remove('visible');
+  storyArea.classList.remove('visible');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: buildPrompt() }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const parts = parseStory(text);
+
+    if (!parts['起']) throw new Error('神話の生成に失敗しました');
+
+    for (const k of ['起','承','転','結','神託']) {
+      const el = document.getElementById(`part-${k}`);
+      if (el) el.textContent = parts[k] || '';
+    }
+
+    loading.classList.remove('visible');
+    storyArea.classList.add('visible');
+    btnMain.textContent = '⚡ 神話降臨';
+    btnMain.disabled = false;
+
+  } catch(e) {
+    loading.classList.remove('visible');
+    errorBox.textContent = '❌ ' + e.message;
+    errorBox.classList.add('visible');
+    btnMain.textContent = '⚡ 神話降臨';
+    btnMain.disabled = false;
+  }
+}
+
+function reset() {
+  document.getElementById('btnMain').disabled = false;
+  document.getElementById('btnMain').textContent = '⚡ 神話降臨';
+  document.getElementById('btnReset').classList.remove('visible');
+  document.getElementById('loading').classList.remove('visible');
+  document.getElementById('errorBox').classList.remove('visible');
+  document.getElementById('storyArea').classList.remove('visible');
+}
+</script>
+</body>
+</html>
